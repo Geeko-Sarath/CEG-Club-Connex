@@ -1,0 +1,33 @@
+<%- include('partials/header') %>
+
+<div class="jumbotron text-center">
+  <div class="container">
+    <i class="fas fa-user fa-6x"></i>
+    <h1 class="display-3">Welcome, <%= studentName %>!</h1>
+    <p class="lead">Roll Number: <%= rollNumber %></p>
+    <hr>
+    <a class="btn btn-light btn-lg" href="/logout" role="button">Log Out</a>
+  </div>
+</div>
+
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Submit Your Achievements</h2>
+  <form action="/submit-achievement" method="POST">
+    <div class="form-group">
+      <label for="event-id">Event ID</label>
+      <input type="number" class="form-control" id="event-id" name="event_id" required>
+    </div>
+    <div class="form-group">
+      <label for="achievement">Achievement</label>
+      <textarea class="form-control" id="achievement" name="achievement" rows="3" required></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit Achievement</button>
+  </form>
+  <hr>
+  <h2 class="text-center mb-4">Generate Achievements Report</h2>
+  <form action="/generate-report" method="POST">
+    <button type="submit" class="btn btn-dark">Generate Report as PDF</button>
+  </form>
+</div>
+
+<%- include('partials/footer') %>

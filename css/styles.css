@@ -1,0 +1,56 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.centered {
+  padding-top: 200px;
+  text-align: center;
+}
+
+.jumbotron {
+  background-color: #343a40;
+  color: #ffffff;
+}
+
+.jumbotron .btn-light {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: #ffffff;
+}
+
+.jumbotron .btn-dark {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: #ffffff;
+}
+
+.jumbotron .btn-light:hover,
+.jumbotron .btn-dark:hover {
+  color: #ffffff;
+}
+
+.jumbotron .lead {
+  font-size: 1.25rem;
+}
+
+.jumbotron .display-3 {
+  font-size: 4.5rem;
+  font-weight: 300;
+}
+
+.club-tile {
+  transition: transform 0.3s ease;
+}
+
+.club-tile:hover {
+  transform: scale(1.05);
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.card-text {
+  font-size: 1rem;
+}

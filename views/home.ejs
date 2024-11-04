@@ -1,0 +1,32 @@
+<%- include('partials/header') %>
+
+<div class="jumbotron centered">
+  <div class="container">
+    <i class="fas fa-users fa-6x"></i>
+    <h1 class="display-3">CEG Club Connex</h1>
+    <p class="lead">A centralized platform for all CEG clubs, enabling students to communicate, register, and access events easily.</p>
+    <hr>
+    <a class="btn btn-light btn-lg" href="/register" role="button">Register</a>
+    <a class="btn btn-dark btn-lg" href="/login" role="button">Login</a>
+  </div>
+</div>
+
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Our Clubs</h2>
+  <div class="row">
+    <% clubs.forEach(club => { %>
+      <div class="col-md-4 mb-4">
+        <div class="card club-tile">
+          <div class="card-body">
+            <h5 class="card-title"><%= club.club_name %></h5>
+            <p class="card-text"><%= club.club_description %></p>
+            <p class="card-text"><strong>President:</strong> <%= club.student_name %></p>
+            <p class="card-text"><strong>Contact:</strong> <%= club.ob_contact_details %></p>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
