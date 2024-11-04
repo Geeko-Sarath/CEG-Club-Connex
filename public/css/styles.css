@@ -1,16 +1,92 @@
-
 body {
-  background-color: #E8ECEF;
+  background-color: #f4f4f9;
+  color: #333;
 }
 
-.centered {
-    padding-top: 200px;
-    text-align: center;
+.navbar {
+  background-color: #343a40;
 }
 
-.secret-text {
-  text-align: center;
-  font-size: 2rem;
+.navbar .navbar-brand, .navbar .nav-link {
+  color: #fff !important;
+}
+
+.navbar .nav-link.btn {
+  color: #343a40 !important;
+  background-color: #ffc107;
+  border-color: #ffc107;
+}
+
+.navbar .nav-link.btn:hover {
+  color: #fff !important;
+  background-color: #e0a800;
+  border-color: #d39e00;
+}
+
+.jumbotron {
+  background-color: #007bff;
   color: #fff;
-  background-color: #000;
+  padding: 2rem 1rem;
+  margin-bottom: 2rem;
+  border-radius: .3rem;
+}
+
+.jumbotron .container {
+  max-width: 40rem;
+}
+
+.jumbotron .display-3 {
+  font-size: 2.5rem;
+}
+
+.jumbotron .lead {
+  font-size: 1.25rem;
+  font-weight: 300;
+}
+
+.card {
+  border: 1px solid #ddd;
+  border-radius: .25rem;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.card-title {
+  margin-bottom: .75rem;
+  color: #007bff;
+}
+
+.card-text {
+  margin-bottom: 1rem;
+}
+
+.footer {
+  background-color: #343a40;
+  color: #fff;
+  padding: 1rem 0;
+  text-align: center;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+}
+
+.footer .text-muted {
+  color: #6c757d !important;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.footer {
+  animation: fadeInUp 2s ease-in-out;
 }

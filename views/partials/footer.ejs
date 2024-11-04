@@ -1,4 +1,30 @@
-
-
-</body>
-</html>
+<footer class="footer mt-auto py-3 bg-light">
+    <div class="container text-center">
+      <span class="text-muted">CEG-Club-Connex © <span id="current-year"></span> All Rights Reserved.</span>
+    </div>
+  </footer>
+  
+  <script>
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+  </script>
+  
+  <!-- Optional: Add animation to the footer -->
+  <style>
+    .footer {
+      animation: fadeInUp 2s ease-in-out;
+    }
+  
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+  </body>
+  </html>
+  

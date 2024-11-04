@@ -6,7 +6,7 @@
     <h1 class="display-3">Welcome, <%= studentName %>!</h1>
     <p class="lead">Roll Number: <%= rollNumber %></p>
     <hr>
-    <a class="btn btn-light btn-lg" href="/logout" role="button">Log Out</a>
+    <a class="btn btn-warning btn-lg" href="/logout" role="button">Log Out</a>
   </div>
 </div>
 
@@ -30,4 +30,26 @@
   </form>
 </div>
 
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Our Clubs</h2>
+  <div class="row">
+    <% clubs.forEach(club => { %>
+      <div class="col-md-4 mb-4">
+        <div class="card club-tile">
+          <div class="card-body text-center">
+            <img src="<%= club.logo_url %>" alt="<%= club.club_name %> Logo" class="img-fluid mb-3">
+            <h5 class="card-title"><%= club.club_name %></h5>
+            <a href="/non-member.ejs?club=<%= club.club_name %>" class="btn btn-secondary mb-2">Non-Member Login</a>
+            <a href="/member.ejs?club=<%= club.club_name %>" class="btn btn-primary mb-2">Member Login</a>
+            <a href="/ob.ejs?club=<%= club.club_name %>" class="btn btn-success mb-2">OB Login</a>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</div>
+
 <%- include('partials/footer') %>
+
+<!-- Include the JavaScript file for handling the dropdown menu -->
+<script src="student.js"></script>

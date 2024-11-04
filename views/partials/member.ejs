@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Members of <%= club.CLUB_NAME %></title>
+</head>
+<body>
+    <h1>Members of <%= club.CLUB_NAME %></h1>
+    <ul>
+        <% members.forEach(member => { %>
+            <li><%= member.STUDENT_NAME %> (Roll No: <%= member.ROLL_NO %>)</li>
+        <% }); %>
+    </ul>
+    <a href="/logout">Logout</a>
+</body>
+</html>
