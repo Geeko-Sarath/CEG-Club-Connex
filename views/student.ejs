@@ -28,9 +28,8 @@
   <form action="/generate-report" method="POST">
     <button type="submit" class="btn btn-dark">Generate Report as PDF</button>
   </form>
-</div>
-
-<div class="container mt-5">
+  
+  <hr>
   <h2 class="text-center mb-4">Our Clubs</h2>
   <div class="row">
     <% clubs.forEach(club => { %>
@@ -39,14 +38,33 @@
           <div class="card-body text-center">
             <img src="<%= club.logo_url %>" alt="<%= club.club_name %> Logo" class="img-fluid mb-3">
             <h5 class="card-title"><%= club.club_name %></h5>
-            <a href="/non-member.ejs?club=<%= club.club_name %>" class="btn btn-secondary mb-2">Non-Member Login</a>
-            <a href="/member.ejs?club=<%= club.club_name %>" class="btn btn-primary mb-2">Member Login</a>
-            <a href="/ob.ejs?club=<%= club.club_name %>" class="btn btn-success mb-2">OB Login</a>
+            <a href="/non-member?club_id=<%= club.club_id %>" class="btn btn-secondary mb-2">Non-Member Login</a>
+            
+            <!-- Member Login Form -->
+            <form action="/member" method="GET" class="mt-3">
+              <div class="form-group">
+                <label for="password-<%= club.club_id %>">Enter your password:</label>
+                <input type="password" id="password-<%= club.club_id %>" name="password" class="form-control" required>
+                <input type="hidden" name="club_id" value="<%= club.club_id %>">
+              </div>
+              <button type="submit" class="btn btn-primary mb-2">Member Login</button>
+            </form>
+  
+            <!-- OB Login Form -->
+            <form action="/ob" method="GET" class="mt-3">
+              <div class="form-group">
+                <label for="password-<%= club.club_id %>">Enter your password:</label>
+                <input type="password" id="password-<%= club.club_id %>" name="password" class="form-control" required>
+                <input type="hidden" name="club_id" value="<%= club.club_id %>">
+              </div>
+              <button type="submit" class="btn btn-success mb-2">OB Login</button>
+            </form>
           </div>
         </div>
       </div>
     <% }); %>
   </div>
+  
 </div>
 
 <%- include('partials/footer') %>

@@ -16,13 +16,15 @@ router.get("/", async (req, res) => {
       SELECT 
         clubs.CLUB_NAME,
         clubs.CLUB_DESCRIPTION,
-        OfficeBearers.STUDENT_NAME,
+        students.STUDENT_NAME,
         OfficeBearers.OB_POST,
         OfficeBearers.OB_CONTACT_DETAILS
       FROM 
         clubs
       JOIN 
         OfficeBearers ON clubs.CLUB_ID = OfficeBearers.CLUB_ID
+        join
+        students on OFFICEBEARERS.STUDENT_ROLL_NO = students.ROLL_NO
       WHERE 
         OfficeBearers.OB_POST = 'President'
     `);
@@ -58,23 +60,22 @@ router.get("/logout", (req, res) => {
 router.get("/student", ensureAuthenticated, async (req, res) => {
   try {
     const result = await db.query("SELECT * FROM clubs");
-    const clubs = result.rows;
+    const clubs = result.rows; // Fetch clubs from the database
     res.render("student.ejs", {
       studentName: req.user.student_name,
       rollNumber: req.user.roll_no,
-      clubs: clubs,
-      userRole: req.user.role // Assuming you have a role field in your user data
+      clubs: clubs // Pass clubs to the template
     });
   } catch (err) {
     console.error("Error fetching clubs:", err);
     res.render("student.ejs", {
       studentName: req.user.student_name,
       rollNumber: req.user.roll_no,
-      clubs: [],
-      userRole: req.user.role
+      clubs: [] // Pass an empty array if there's an error
     });
   }
 });
+
 
 // Login handling
 router.post("/login", async (req, res, next) => {
@@ -86,7 +87,7 @@ router.post("/login", async (req, res, next) => {
     const data = response.data;
 
     if (data.success) {
-      passport.authenticate("local", (err, user, info) => {
+      passport.authenticate("local",async (err, user, info) => {
         if (err) {
           return next(err);
         }
@@ -94,6 +95,11 @@ router.post("/login", async (req, res, next) => {
           req.flash('error', info.message);
           return res.redirect("/login");
         }
+        const rollNo=user.roll_no;
+        const memberDetails = await db.query("SELECT * FROM students join member on students.roll_no = member.student_roll_no WHERE ROLL_NO = $1", [rollNo]);
+       console.log(memberDetails.rows);
+       const obdetails = await db.query("SELECT * FROM students join officebearers on students.roll_no = officebearers.student_roll_no WHERE ROLL_NO = $1",[rollNo]);
+       console.log(obdetails.rows);
         req.logIn(user, (err) => {
           if (err) {
             return next(err);
@@ -112,14 +118,15 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
+
+// Registration handling
 // Registration handling
 router.post("/register", async (req, res) => {
   const rollNo = req.body.username; // Using roll number as username
   const password = req.body.password;
   const studentName = req.body.student_name;
-  const cgpa = req.body.cgpa;
-  const semNo = req.body.sem_no;
-
+  const department = req.body.department;
+  const contact_no = req.body.contact_no;
   try {
     const checkResult = await db.query("SELECT * FROM Students WHERE ROLL_NO = $1", [rollNo]);
 
@@ -132,27 +139,24 @@ router.post("/register", async (req, res) => {
           console.error("Error hashing password:", err);
           return res.redirect("/register");
         } else {
-          const result = await db.query(
-            "INSERT INTO Students (ROLL_NO, STUDENT_NAME, CGPA, SEM_NO, MEMBER_PASSWORD) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-            [rollNo, studentName, cgpa, semNo, hash]
+          await db.query(
+            "INSERT INTO Students (ROLL_NO, STUDENT_NAME,DEPARTMENT,CONTACT_NO,PASSWORD) VALUES ($1, $2, $3,$4,$5)",
+            [rollNo, studentName,department,contact_no, hash]
           );
-          const user = result.rows[0];
-          req.login(user, (err) => {
-            if (err) {
-              console.error("Error logging in after registration:", err);
-              return res.redirect("/register");
-            } else {
-              res.redirect("/student");
-            }
-          });
+          // Registration success message
+          req.flash('success', 'Registration successful! Please log in with your credentials.');
+          alert("Registration successful! Please log in with your credentials.");
+          res.redirect("/"); // Redirect to home page
         }
       });
     }
   } catch (err) {
     console.log(err);
+    req.flash('error', 'An error occurred during registration. Please try again.');
     res.redirect("/register");
   }
 });
+
 
 // Submit achievement route
 router.post("/submit-achievement", ensureAuthenticated, async (req, res) => {
@@ -271,51 +275,130 @@ router.post("/generate-report", ensureAuthenticated, async (req, res) => {
   }
 });
 
+
 // Non-member route
 router.get("/non-member", async (req, res) => {
-  const clubId = req.query.clubId; // Assuming club ID is passed as a query parameter
+  const clubId = req.query.club_id; // Get club_id from query parameters
   try {
     const result = await db.query("SELECT * FROM Clubs WHERE CLUB_ID = $1", [clubId]);
     const club = result.rows[0];
-    res.render("non-member.ejs", { club }); // Correct path to EJS
+    console.log(club); // Assuming club ID is stored in user session
+
+    if (!club) {
+      req.flash('error', 'Club not found.');
+      return res.redirect("/"); // Redirect if club not found
+    }
+
+    res.render("non-member.ejs", { club }); // Render the non-member view with club details
   } catch (err) {
     console.error("Error fetching club details:", err);
+    req.flash('error', 'An error occurred while fetching club details.');
     res.redirect("/");
   }
 });
+
 
 // Member route
+// Member route
 router.get("/member", ensureAuthenticated, async (req, res) => {
-  const clubId = req.user.clubId; // Assuming club ID is stored in user session
+  const { password, club_id } = req.query; // Get password and club ID from query parameters
+  const rollNo = req.user.roll_no; // Assuming roll number is stored in user session
+
   try {
-    const clubResult = await db.query("SELECT * FROM Clubs WHERE CLUB_ID = $1", [clubId]);
-    const membersResult = await db.query("SELECT * FROM Students WHERE ROLL_NO IN (SELECT ROLL_NO FROM OfficeBearers WHERE CLUB_ID = $1)", [clubId]);
+    // Fetch the user's hashed password from the database
+    const result = await db.query("SELECT mem_password from member WHERE student_roll_no = $1", [rollNo]);
     
+    // Ensure club_id is defined
+    if (!club_id) {
+      req.flash('error', 'Club ID is required.');
+      return res.redirect("/"); // Redirect to home or login page
+    }
+
+    const memResult = await db.query(
+      "SELECT m.STUDENT_ROLL_NO, s.student_name FROM member m JOIN students s ON m.student_roll_no = s.roll_no WHERE club_id = $1",
+      [club_id]
+    );
+
+    const clubResult = await db.query("SELECT * FROM Clubs WHERE CLUB_ID = $1", [club_id]);
     const club = clubResult.rows[0];
-    const members = membersResult.rows;
-    
-    res.render("member.ejs", { club, members }); // Correct path to EJS
+    const members = memResult.rows;
+
+    if (result.rows.length > 0) {
+      const memberPassword = result.rows[0].mem_password;
+
+      if (password === memberPassword) {
+        // Password is correct, render the member dashboard or relevant page
+        res.render("member.ejs", { club: club, members: members });
+      } else {
+        // Password is incorrect
+        req.flash('error', 'Incorrect password. Please try again.');
+        console.log( "no password match", password,memberPassword);
+        res.redirect("/"); // Redirect to home or login page
+      }
+    } else {
+      // User not found
+      req.flash('error', 'User not found.');
+      console.log( "no password match");
+      res.redirect("/"); // Redirect to home or login page
+    }
   } catch (err) {
-    console.error("Error fetching members:", err);
-    res.redirect("/");
+    console.error("Error verifying password:", err);
+    req.flash('error', 'An error occurred while verifying the password.');
+    res.redirect("/"); // Redirect to home or login page
+  }
+});
+router.get("/ob", ensureAuthenticated, async (req, res) => {
+  const { password, club_id } = req.query; // Get password and club ID from query parameters
+  const rollNo = req.user.roll_no; // Assuming roll number is stored in user session
+
+  try {
+    // Fetch the user's hashed password from the database
+    const result = await db.query("SELECT ob_password from OfficeBearers WHERE student_roll_no = $1", [rollNo]);
+    
+    // Ensure club_id is defined
+    if (!club_id) {
+      req.flash('error', 'Club ID is required.');
+      return res.redirect("/"); // Redirect to home or login page
+    }
+
+    const obResult = await db.query(
+      "SELECT m.ob_post, s.student_name FROM OfficeBearers m JOIN students s ON m.student_roll_no = s.roll_no WHERE club_id = $1",
+      [club_id]
+    );
+
+    const clubResult = await db.query("SELECT * FROM Clubs WHERE CLUB_ID = $1", [club_id]);
+    const club = clubResult.rows[0];
+    const obs = obResult.rows;
+
+    if (result.rows.length > 0) {
+      const obPassword = result.rows[0].ob_password;
+
+      if (password === obPassword) {
+        // Password is correct, render the member dashboard or relevant page
+        res.render("ob.ejs", { club: club, ob: obs });
+      } else {
+        // Password is incorrect
+        req.flash('error', 'Incorrect password. Please try again.');
+        console.log( "no password match", password,obPassword);
+        res.redirect("/"); // Redirect to home or login page
+      }
+    } else {
+      // User not found
+      req.flash('error', 'User not found.');
+      console.log( "no password match");
+      res.redirect("/"); // Redirect to home or login page
+    }
+  } catch (err) {
+    console.error("Error verifying password:", err);
+    req.flash('error', 'An error occurred while verifying the password.');
+    res.redirect("/"); // Redirect to home or login page
   }
 });
 
+
+
+
 // Office bearer route
-router.get("/ob", ensureAuthenticated, async (req, res) => {
-  const clubId = req.user.clubId; // Assuming club ID is stored in user session
-  try {
-    const clubResult = await db.query("SELECT * FROM Clubs WHERE CLUB_ID = $1", [clubId]);
-    const officeBearersResult = await db.query("SELECT * FROM OfficeBearers WHERE CLUB_ID = $1", [clubId]);
-    
-    const club = clubResult.rows[0];
-    const officeBearers = officeBearersResult.rows;
-    
-    res.render("ob.ejs", { club, officeBearers }); // Correct path to EJS
-  } catch (err) {
-    console.error("Error fetching office bearers:", err);
-    res.redirect("/");
-  }
-});
+
 
 export default router;

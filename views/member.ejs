@@ -1,0 +1,14 @@
+<%- include('partials/header') %>
+
+<div class="container">
+    <h1>Welcome to <%= club.club_name %></h1>
+    <p><strong>Description:</strong> <%= club.club_description %></p>
+    <h2>Members of <%= club.club_name %></h2>
+    <ul>
+        <% members.forEach(member => { %>
+            <li><%= member.student_name %> (Roll No: <%= member.student_roll_no %>)</li>
+        <% }); %>
+    </ul>
+</div>
+
+<%- include('partials/footer') %>
