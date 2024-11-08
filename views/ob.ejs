@@ -1,16 +1,162 @@
+<%- include('partials/header') %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Office Bearers of <%= club.club_name %></title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CEG Club Connex - Event Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Office Bearers of <%= club.club_name %></h1>
-    <ul>
-        <% ob.forEach(ob => { %>
-            <li><%= ob.student_name %> - <%= ob.ob_post%></li>
-        <% }); %>
-    </ul>
-    
-</body>
-</html>
+<div class="container my-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Manage Events</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal" onclick="openAddEventModal()">Add New Event</button>
+  </div>
+
+  <div class="row" id="eventContainer">
+    <% events.forEach(event => { %>
+      <div class="col-md-4 mb-4" id="<%= event.event_id %>">
+        <div class="card">
+          <img src="<%= event.event_poster_image %>" class="card-img-top" alt="Event Poster">
+          <div class="card-body">
+            <h5 class="card-title"><%= event.event_name %></h5>
+            <p class="card-text"><strong>Date:</strong> <span class="event-date"><%= event.event_date %></span></p>
+            <p class="card-text"><strong>Venue:</strong> <%= event.event_venue %></p>
+            <button class="btn btn-secondary me-2" onclick="openEditEventModal('<%= event.event_id %>', '<%= event.event_name %>', '<%= event.event_date %>', '<%= event.event_venue %>', '<%= event.event_time %>', '<%= event.event_short_description %>', '<%= event.event_link %>', '<%= event.event_poster_image %>')">Edit</button>
+            <form action="/deleteEvent" method="POST" style="display:inline;">
+              <input type="hidden" name="event_id" value="<%= event.event_id %>">
+              <input type="hidden" name="club_id" value="<%= club.club_id %>"> <!-- Hidden input for club_id -->
+              <input type="hidden" name="password" value="<%= password %>"> <!-- Hidden input for password -->
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+
+  <h3 class="mt-5">Office Bearers</h3>
+  <div class="row" id="obContainer">
+    <% ob.forEach(officeBearer => { %>
+      <div class="col-md-4 mb-4">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title"><%= officeBearer.student_name %></h5>
+            <p class="card-text"><strong>Post:</strong> <%= officeBearer.ob_post %></p>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</div>
+
+<div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addEventModalLabel">Add New Event</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addEventForm" action="/addEvent" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="club_id" value="<%= club.club_id %>"> <!-- Hidden input for club_id -->
+          <input type="hidden" name="password" value="<%= password %>"> <!-- Hidden input for password -->
+          <input type="hidden" name="event_id" id="event_id"> <!-- Hidden input for event_id -->
+          <div class="mb-3">
+            <label for="eventTitle" class="form-label">Event Title</label>
+            <input type="text" class="form-control" id="eventTitle" name="eventName" required>
+          </div>
+          <div class="mb-3">
+            <label for="eventImageFile" class="form-label">Event Poster</label>
+            <input type="file" class="form-control" id="eventImageFile" name="eventImage" accept="image/*">
+            <img id="eventImagePreview" class="img-fluid mt-3" style="display: none;" alt="Image Preview">
+          </div>
+          <div class="mb-3">
+            <label for="eventDate" class="form-label">Event Date</label>
+            <input type="date" class="form-control" id="eventDate" name="eventDate" required>
+          </div>
+          <div class="mb-3">
+            <label for="eventVenue" class="form-label">Event Venue</label>
+            <input type="text" class="form-control" id="eventVenue" name="eventVenue" required>
+          </div>
+          <div class="mb-3">
+            <label for="eventTime" class="form-label">Event Time</label>
+            <input type="time" class="form-control" id="eventTime" name="eventTime" required>
+          </div>
+          <div class="mb-3">
+            <label for="eventShortDescription" class="form-label">Short Description</label>
+            <textarea class="form-control" id="eventShortDescription" name="eventShortDescription" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="eventLink" class="form-label">Event Link</label>
+            <input type="url" class="form-control" id="eventLink" name="eventLink" required>
+          </div>
+          <div class="mb-3">
+            <label>Type</label><br>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="extraCurricular" id="extraCurricular" value="Extra Curricular" required>
+              <label class="form-check-label" for="extraCurricular">Extra Curricular</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="extraCurricular" id="nonCurricular" value="Non Curricular" required>
+              <label class="form-check-label" for="nonCurricular">Non Curricular</label>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary">Save Event</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  let currentEditEventId = null;
+
+  document.getElementById("eventImageFile").addEventListener("change", function() {
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const preview = document.getElementById("eventImagePreview");
+        preview.src = e.target.result;
+        preview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  function openAddEventModal() {
+    currentEditEventId = null;
+    document.getElementById("addEventModalLabel").textContent = "Add New Event";
+    document.getElementById("addEventForm").reset();
+    document.getElementById("eventImagePreview").style.display = "none";
+  }
+
+  function openEditEventModal(eventId, eventName, eventDate, eventVenue, eventTime, eventShortDescription, eventLink, eventImage) {
+    currentEditEventId = eventId;
+    document.getElementById("addEventModalLabel").textContent = "Edit Event";
+
+    // Set the form action to the edit route
+    document.getElementById("addEventForm").action = "/editEvent"; // Change to edit route
+
+    document.getElementById("event_id").value = eventId; // Set the event_id for editing
+    document.getElementById("eventTitle").value = eventName;
+    document.getElementById("eventDate").value = eventDate;
+    document.getElementById("eventVenue").value = eventVenue;
+    document.getElementById("eventTime").value = eventTime;
+    document.getElementById("eventShortDescription").value = eventShortDescription;
+    document.getElementById("eventLink").value = eventLink;
+
+    const eventImagePreview = document.getElementById("eventImagePreview");
+    eventImagePreview.src = eventImage;
+    eventImagePreview.style.display = "block";
+
+    new bootstrap.Modal(document.getElementById("addEventModal")).show();
+  }
+
+  function deleteEvent(eventId) {
+    document.getElementById(eventId).remove();
+  }
+</script>

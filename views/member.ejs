@@ -3,12 +3,29 @@
 <div class="container">
     <h1>Welcome to <%= club.club_name %></h1>
     <p><strong>Description:</strong> <%= club.club_description %></p>
+
     <h2>Members of <%= club.club_name %></h2>
     <ul>
         <% members.forEach(member => { %>
             <li><%= member.student_name %> (Roll No: <%= member.student_roll_no %>)</li>
         <% }); %>
     </ul>
+
+    <h2>Upcoming Events</h2>
+    <div class="row" id="eventContainer">
+        <% events.forEach(event => { %>
+            <div class="col-md-4 mb-4" id="<%= event.event_id %>">
+                <div class="card">
+                    <img src="<%= event.event_poster_image %>" class="card-img-top" alt="Event Poster">
+                    <div class="card-body">
+                        <h5 class="card-title"><%= event.event_name %></h5>
+                        <p class="card-text"><strong>Date:</strong> <span class="event-date"><%= event.event_date %></span></p>
+                        <p class="card-text"><strong>Venue:</strong> <%= event.event_venue %></p>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    </div>
 </div>
 
 <%- include('partials/footer') %>

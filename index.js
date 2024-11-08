@@ -5,6 +5,7 @@ import flash from "connect-flash";
 import env from "dotenv";
 import passport from "./passportConfig.js";
 import router from "./routes.js";
+import path from "path"; // Import path module
 
 const app = express();
 const port = process.env.PORT; // Use environment variable for port
@@ -25,6 +26,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve static files from the "public" directory
 app.use(express.static("public"));
+
+// Serve uploaded files from the "uploads" directory
+app.use('/uploads', express.static('c:\\Users\\iitje\\webdev\\ceg\\public\\images\\uploads'));
 
 // Flash messages middleware
 app.use(flash());
