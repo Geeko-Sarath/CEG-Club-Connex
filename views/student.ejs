@@ -11,18 +11,70 @@
 </div>
 
 <div class="container mt-5">
-  <h2 class="text-center mb-4">Submit Your Achievements</h2>
-  <form action="/submit-achievement" method="POST">
+  <h2 class="text-center mb-4">Submit Your Academic Details</h2>
+  <form action="/submit-academic-details" method="POST">
+    <div class="form-group">
+      <label for="sem">Semester</label>
+      <input type="text" class="form-control" id="sem" name="sem" placeholder="Enter your semester" required>
+    </div>
+    <div class="form-group">
+      <label for="gpa">GPA</label>
+      <input type="text" class="form-control" id="gpa" name="gpa" placeholder="Enter your GPA" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Update Academics</button>
+  </form>
+
+  <h2 class="text-center mb-4">Submit Your Inter-College Achievement Details</h2>
+
+  <form action="/submit-inter-event" method="POST">
+   
+    <div class="form-group">
+      <label for="conducting-organization">Conducting Organization</label>
+      <input type="text" class="form-control" id="conducting-organization" name="conducting_organization" placeholder="Enter the conducting organization" required>
+    </div>
+    <div class="form-group">
+      <label for="inter-event-name">Event Name</label>
+      <input type="text" class="form-control" id="inter-event-name" name="inter_event_name" placeholder="Enter the event name" required>
+    </div>
+    <div class="form-group">
+      <label for="inter-achievements-desc">Achievements Description</label>
+      <textarea class="form-control" id="inter-achievements-desc" name="inter_achievements_desc" rows="3" placeholder="Describe your achievements" required></textarea>
+    </div>
+    <div class="form-group">
+      <label for="place-won">Place Won</label>
+      <input type="text" class="form-control" id="place-won" name="place_won" placeholder="Enter the place won" required>
+    </div>
+    <div class="form-group">
+      <label for="certificate-link">Certificate Link</label>
+      <input type="url" class="form-control" id="certificate-link" name="certificate_link" placeholder="Enter the certificate link" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+  <h2 class="text-center mb-4">Submit Your CEG Events Achievement Details</h2>
+
+  <form action="/submit-intra-achievement" method="POST">
     <div class="form-group">
       <label for="event-id">Event ID</label>
-      <input type="number" class="form-control" id="event-id" name="event_id" required>
+      <input type="text" class="form-control" id="event-id" name="event_id" placeholder="Enter the event ID" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="achievements-desc">Achievements Description</label>
+      <textarea class="form-control" id="achievements-desc" name="achievements_desc" rows="3" placeholder="Describe your achievements" required></textarea>
     </div>
     <div class="form-group">
-      <label for="achievement">Achievement</label>
-      <textarea class="form-control" id="achievement" name="achievement" rows="3" required></textarea>
+      <label for="place-won">Place Won</label>
+      <input type="text" class="form-control" id="place-won" name="place_won" placeholder="Enter the place won" required>
     </div>
-    <button type="submit" class="btn btn-primary">Submit Achievement</button>
+    <div class="form-group">
+      <label for="certificate-link">Certificate Link</label>
+      <input type="url" class="form-control" id="certificate-link" name="certificate_link" placeholder="Enter the certificate link" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
   </form>
+  
+  
+  
   <hr>
   <h2 class="text-center mb-4">Generate Achievements Report</h2>
   <form action="/generate-report" method="POST">
@@ -68,6 +120,3 @@
 </div>
 
 <%- include('partials/footer') %>
-
-<!-- Include the JavaScript file for handling the dropdown menu -->
-<script src="student.js"></script>
