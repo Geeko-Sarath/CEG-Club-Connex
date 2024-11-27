@@ -232,8 +232,14 @@ router.post("/generate-report", ensureAuthenticated, async (req, res) => {
   try {
     const studentResult = await db.query("SELECT * FROM Students WHERE ROLL_NO = $1", [rollNo]);
     const achievementsResult = await db.query("SELECT * FROM Academic WHERE student_roll_no = $1 ORDER BY SEM", [rollNo]);
+    const intraAchievementsResult = await db.query(`
+      SELECT * 
+      FROM IntraAchievements a
+      JOIN events e ON a.event_id = e.event_id
+      JOIN clubs c ON e.club_id = c.club_id
+      WHERE roll_no = $1
+    `, [rollNo]);
     const interAchievementsResult = await db.query("SELECT * FROM InterAchievements WHERE roll_no = $1", [rollNo]);
-    const intraAchievementsResult = await db.query("SELECT * FROM IntraAchievements WHERE roll_no = $1", [rollNo]);
     const cgpaResult = await db.query("SELECT AVG(gpa) as cgpa FROM Academic WHERE student_roll_no = $1", [rollNo]);
 
     const student = studentResult.rows[0];
@@ -246,46 +252,77 @@ router.post("/generate-report", ensureAuthenticated, async (req, res) => {
       <html>
       <head>
         <style>
-          body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-          }
-          h1 {
-            color: #4CAF50;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-          }
-          table, th, td {
-            border: 1px solid #ddd;
-          }
-          th, td {
-            padding: 8px;
-            text-align: left;
-          }
-          th {
-            background-color: #f2f2f2;
-          }
-          ul {
-            list-style-type: none;
-            padding: 0;
-          }
-          li {
-            background: #f9f9f9;
-            margin: 5px 0;
-            padding: 10px;
-            border: 1px solid #ddd;
-          }
-        </style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      color: #4CAF50;
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      background: #fff;
+      margin: 5px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header img {
+      width: 100px;
+      height: auto;
+    }
+    .header h1 {
+      margin: 0;
+    }
+  </style>
       </head>
       <body>
-        <h1>Report for ${student.student_name}</h1>
+      <div class="header">
+    
+    <h1>CEG Club Connex</h1>
+  </div>
+        <h2>Report for ${student.student_name}</h2>
         <table>
           <tr>
             <th>Roll Number</th>
             <td>${student.roll_no}</td>
+          </tr>
+          <tr>
+            <th>Department</th>
+            <td>${student.department}</td>
+          </tr>
+          <tr>
+            <th>Contact Number</th>
+            <td>${student.contact_no}</td>
           </tr>
           <tr>
             <th>CGPA</th>
@@ -299,21 +336,48 @@ router.post("/generate-report", ensureAuthenticated, async (req, res) => {
               Semester: ${achievement.sem}, GPA: ${achievement.gpa}
             </li>`).join('')}
         </ul>
-        <h2>Inter College Achievements</h2>
-        <ul>
+       <h2 class="section-title">Inter College Achievements</h2>
+        <table>
+          <tr>
+            <th>Event</th>
+            <th>Organization</th>
+            <th>Place</th>
+            <th>Description</th>
+            <th>Certificate</th>
+          </tr>
           ${interAchievements.map(achievement => `
-            <li>
-              Event: ${achievement.inter_event_name}, Organization: ${achievement.conducting_organization}, Place: ${achievement.place_won}, Description: ${achievement.inter_achievements_desc}, Certificate: <a href="${achievement.certificate_link}">Link</a>
-            </li>`).join('')}
-        </ul>
-        <h2>CEG College Achievements</h2>
-        <ul>
+            <tr>
+              <td>${achievement.inter_event_name}</td>
+              <td>${achievement.conducting_organization}</td>
+              <td>${achievement.place_won}</td>
+              <td>${achievement.inter_achievements_desc}</td>
+              <td><a href="${achievement.certificate_link}">Link</a></td>
+            </tr>`).join('')}
+        </table>
+        <h2 class="section-title">CEG College Achievements</h2>
+        <table>
+          <tr>
+            <th>Event ID</th>
+            <th>Event name</th>
+            <th>Event Date</th>
+            <th>Conducting Club</th>
+            <th>Description</th>
+            <th>Place Won</th>
+            <th>Certificate</th>
+          </tr>
           ${intraAchievements.map(achievement => `
-            <li>
-              Event ID: ${achievement.event_id}, Description: ${achievement.achievements_desc}, Place: ${achievement.place_won}, Certificate: <a href="${achievement.certificate_link}">Link</a>
-            </li>`).join('')}
-        </ul>
-      </body>
+            <tr>
+              <td>${achievement.event_id}</td>
+              <td>${achievement.event_name}</td>
+              <td>${achievement.event_date}</td>
+              <td>${achievement.club_name}</td>
+              <td>${achievement.achievements_desc}</td>
+              <td>${achievement.place_won}</td>
+              <td><a href="${achievement.certificate_link}">Link</a></td>
+            </tr>`).join('')}
+        </table>
+        </body>
+        
       </html>
     `;
 
