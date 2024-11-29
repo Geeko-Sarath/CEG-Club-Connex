@@ -203,6 +203,8 @@ router.post("/submit-inter-event", ensureAuthenticated, async (req, res) => {
     req.flash('error', 'An error occurred while submitting the inter event details.');
     res.redirect("/student");
   }
+
+  
 });
 
 router.post("/submit-intra-achievement", ensureAuthenticated, async (req, res) => {
@@ -230,6 +232,7 @@ router.post("/generate-report", ensureAuthenticated, async (req, res) => {
   const rollNo = req.user.roll_no;
 
   try {
+    
     const studentResult = await db.query("SELECT * FROM Students WHERE ROLL_NO = $1", [rollNo]);
     const achievementsResult = await db.query("SELECT * FROM Academic WHERE student_roll_no = $1 ORDER BY SEM", [rollNo]);
     const intraAchievementsResult = await db.query(`
@@ -579,9 +582,14 @@ router.post('/addEvent', upload.single('eventImage'), async (req, res) => {
 });
 
 router.post('/editEvent', upload.single('eventImage'), async (req, res) => {
-  const { event_id, eventName, eventDate, eventVenue, eventTime, eventShortDescription, eventLink, extraCurricular, club_id, password } = req.body; // Ensure all fields are included
+  const { event_id, eventName, eventDate, eventVenue, eventTime, eventShortDescription, eventLink, extraCurricular, club_id, password } = req.body;
   const file = req.file;
-  console.log("edit router hit");
+
+  // Validate event_id
+  if (!event_id || isNaN(event_id)) {
+    req.flash('error', 'Invalid event ID.');
+    return res.redirect(`/ob?club_id=${club_id}&password=${password}`);
+  }
 
   try {
     // Prepare the query to update the event
@@ -602,7 +610,7 @@ router.post('/editEvent', upload.single('eventImage'), async (req, res) => {
     // If a new image is uploaded, handle the file upload
     if (file) {
       // Save the new image file locally
-      const targetPath = path.join('c:\\Users\\iitje\\webdev\\ceg\\public\\images\\uploads', file.originalname);
+      const targetPath = path.join(__dirname, 'public', 'images', 'uploads', file.originalname);
       fs.renameSync(file.path, targetPath);
 
       const publicUrl = `/uploads/${file.originalname}`; // URL to access the image locally
@@ -619,12 +627,11 @@ router.post('/editEvent', upload.single('eventImage'), async (req, res) => {
     await db.query(updateQuery, values);
 
     req.flash('success', 'Event updated successfully!');
-    console.log("Event updated successfully");
-    res.redirect(`/ob?club_id=${club_id}&password=${password}`); // Redirect back to the OB page with club_id and password
+    res.redirect(`/ob?club_id=${club_id}&password=${password}`);
   } catch (err) {
     console.error("Error updating event:", err);
     req.flash('error', 'An error occurred while updating the event.');
-    res.redirect(`/ob?club_id=${club_id}&password=${password}`); // Redirect back to the OB page with club_id and password
+    res.redirect(`/ob?club_id=${club_id}&password=${password}`);
   }
 });
 
