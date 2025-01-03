@@ -1,15 +1,28 @@
 <%- include('partials/header') %>
 
-<div class="jumbotron centered">
+<div class="jumbotron text-center">
   <div class="container">
-    <i class="fas fa-users fa-6x"></i>
-    <h1 class="display-3">CEG Club Connex</h1>
-    <p class="lead">A centralized platform for all CEG clubs, enabling students to communicate, register, and access events easily.</p>
-    <a class="nav-link btn btn-outline-warning mr-2" href="/register">Register</a>
-    <a class="nav-link btn btn-outline-warning" href="/login">Login</a>
-       
+    <div class="text-container">
+      <h1 class="display-3 font-weight-bold">
+        Welcome to CEG Club Connex
+      </h1>
+      <p class="lead font-italic">
+        A centralized platform for all CEG clubs, enabling students to communicate, register, and access events easily. 
+      </p>
+    </div>
+    
+    <div class="mt-4">
+      <a href="/register" class="btn btn-warning btn-lg mr-3 shadow-lg" style="font-size: 1.2rem;">
+        <i class="fas fa-user-plus"></i> Register
+      </a>
+      <a href="/login" class="btn btn-outline-light btn-lg shadow-lg" style="font-size: 1.2rem;">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </a>
+    </div>
   </div>
 </div>
+
+
 
 <div class="container mt-5">
   <h2 class="text-center mb-4">Our Clubs</h2>

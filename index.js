@@ -11,9 +11,15 @@ const app = express();
 const port = process.env.PORT; // Use environment variable for port
 env.config();
 
+app.use((req, res, next) => {
+  res.locals.isLoggedIn = req.session && req.session.isLoggedIn;
+  next();
+});
+
 // Middleware for session management
 app.use(
   session({
+    
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
@@ -44,3 +50,40 @@ app.use("/", router);
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+// Middleware to prevent browser cache
+function noCache(req, res, next) {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  next();
+}
+
+// Apply middleware to protected routes
+app.use('/student', noCache);
+function isAuthenticated(req, res, next) {
+  if (req.session.isLoggedIn) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
+// Apply the check to protected routes
+app.use('/student', isAuthenticated);
+app.get('/student', noCache, (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect('/login');
+  }
+  res.render('student');
+});
+app.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res.redirect('/student');
+    }
+    res.clearCookie('connect.sid'); // Clear session cookie
+    res.redirect('/login');
+  });
+});
+
+

@@ -1,122 +1,174 @@
 <%- include('partials/header') %>
 
 <div class="jumbotron text-center">
-  <div class="container">
-    <i class="fas fa-user fa-6x"></i>
-    <h1 class="display-3">Welcome, <%= studentName %>!</h1>
-    <p class="lead">Roll Number: <%= rollNumber %></p>
-    <hr>
-    <a class="btn btn-warning btn-lg" href="/logout" role="button">Log Out</a>
+  <div class="text-container">
+    <h1 class="display-3 font-weight-bold">Welcome, <%= studentName %>!</h1>
+    <p class="lead font-italic">Roll Number: <%= rollNumber %></p>
   </div>
 </div>
 
 <div class="container mt-5">
-  <h2 class="text-center mb-4">Submit Your Academic Details</h2>
-  <form action="/submit-academic-details" method="POST">
-    <div class="form-group">
-      <label for="sem">Semester</label>
-      <input type="text" class="form-control" id="sem" name="sem" placeholder="Enter your semester" required>
-    </div>
-    <div class="form-group">
-      <label for="gpa">GPA</label>
-      <input type="text" class="form-control" id="gpa" name="gpa" placeholder="Enter your GPA" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Update Academics</button>
-  </form>
+  <h2 class="text-center mb-4">Submit Your Details</h2>
+  <div class="d-flex justify-content-center mb-4" style="flex-wrap: nowrap;">
 
-  <h2 class="text-center mb-4">Submit Your Inter-College Achievement Details</h2>
-
-  <form action="/submit-inter-event" method="POST">
-   
-    <div class="form-group">
-      <label for="conducting-organization">Conducting Organization</label>
-      <input type="text" class="form-control" id="conducting-organization" name="conducting_organization" placeholder="Enter the conducting organization" required>
-    </div>
-    <div class="form-group">
-      <label for="inter-event-name">Event Name</label>
-      <input type="text" class="form-control" id="inter-event-name" name="inter_event_name" placeholder="Enter the event name" required>
-    </div>
-    <div class="form-group">
-      <label for="inter-achievements-desc">Achievements Description</label>
-      <textarea class="form-control" id="inter-achievements-desc" name="inter_achievements_desc" rows="3" placeholder="Describe your achievements" required></textarea>
-    </div>
-    <div class="form-group">
-      <label for="place-won">Place Won</label>
-      <input type="text" class="form-control" id="place-won" name="place_won" placeholder="Enter the place won" required>
-    </div>
-    <div class="form-group">
-      <label for="certificate-link">Certificate Link</label>
-      <input type="url" class="form-control" id="certificate-link" name="certificate_link" placeholder="Enter the certificate link" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
-  <h2 class="text-center mb-4">Submit Your CEG Events Achievement Details</h2>
-
-  <form action="/submit-intra-achievement" method="POST">
-    <div class="form-group">
-      <label for="event-id">Event ID</label>
-      <input type="text" class="form-control" id="event-id" name="event_id" placeholder="Enter the event ID" required>
-    </div>
-    
-    <div class="form-group">
-      <label for="achievements-desc">Achievements Description</label>
-      <textarea class="form-control" id="achievements-desc" name="achievements_desc" rows="3" placeholder="Describe your achievements" required></textarea>
-    </div>
-    <div class="form-group">
-      <label for="place-won">Place Won</label>
-      <input type="text" class="form-control" id="place-won" name="place_won" placeholder="Enter the place won" required>
-    </div>
-    <div class="form-group">
-      <label for="certificate-link">Certificate Link</label>
-      <input type="url" class="form-control" id="certificate-link" name="certificate_link" placeholder="Enter the certificate link" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
-  
-  
-  
-  <hr>
-  <h2 class="text-center mb-4">Generate Achievements Report</h2>
-  <form action="/generate-report" method="POST">
-    <button type="submit" class="btn btn-dark">Generate Report as PDF</button>
-  </form>
-  
-  <hr>
-  <h2 class="text-center mb-4">Our Clubs</h2>
-  <div class="row">
-    <% clubs.forEach(club => { %>
-      <div class="col-md-4 mb-4">
-        <div class="card club-tile">
-          <div class="card-body text-center">
-           <a href="https://ibb.co/3B4SPrN"></a> <img src="<%= club.club_logo %>" alt="<%= club.club_name %> Logo" class="img-fluid mb-3"> </a>
-            <h5 class="card-title"><%= club.club_name %></h5>
-            <a href="/non-member?club_id=<%= club.club_id %>" class="btn btn-secondary mb-2">Non-Member Login</a>
-            
-            <!-- Member Login Form -->
-            <form action="/member" method="GET" class="mt-3">
-              <div class="form-group">
-                <label for="password-<%= club.club_id %>">Enter your password:</label>
-                <input type="password" id="password-<%= club.club_id %>" name="password" class="form-control" required>
-                <input type="hidden" name="club_id" value="<%= club.club_id %>">
-              </div>
-              <button type="submit" class="btn btn-primary mb-2">Member Login</button>
-            </form>
-  
-            <!-- OB Login Form -->
-            <form action="/ob" method="GET" class="mt-3">
-              <div class="form-group">
-                <label for="password-<%= club.club_id %>">Enter your password:</label>
-                <input type="password" id="password-<%= club.club_id %>" name="password" class="form-control" required>
-                <input type="hidden" name="club_id" value="<%= club.club_id %>">
-              </div>
-              <button type="submit" class="btn btn-success mb-2">OB Login</button>
-            </form>
-          </div>
+  <!-- Button to open modal for Academic Details -->
+  <div class="d-flex justify-content-center flex-row mb-4">
+    <button class="btn btn-success mb-3 mx-2" data-toggle="modal" data-target="#academicModal" style="width: 250px;">Submit Academic Details</button>
+  </div>
+  <!-- Academic Details Modal -->
+  <div class="modal fade" id="academicModal" tabindex="-1" role="dialog" aria-labelledby="academicModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="academicModalLabel">Submit Academic Details</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="/submit-academic-details" method="POST">
+            <div class="form-group">
+              <label for="sem">Semester</label>
+              <input type="text" class="form-control" id="sem" name="sem" placeholder="Enter your semester" required>
+            </div>
+            <div class="form-group">
+              <label for="gpa">GPA</label>
+              <input type="text" class="form-control" id="gpa" name="gpa" placeholder="Enter your GPA" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Update Academics</button>
+          </form>
         </div>
       </div>
-    <% }); %>
+    </div>
+  </div>
+
+  <!-- Button to open modal for Inter-College Achievement -->
+  <div class="d-flex justify-content-center flex-row mb-4">
+    <button class="btn btn-info mb-3 mx-2" data-toggle="modal" data-target="#interEventModal" style="width: 250px;">Submit Inter-College Achievement</button>
+  </div>
+  <!-- Inter-College Achievement Modal -->
+  <div class="modal fade" id="interEventModal" tabindex="-1" role="dialog" aria-labelledby="interEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="interEventModalLabel">Submit Inter-College Achievement</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="/submit-inter-event" method="POST">
+            <div class="form-group">
+              <label for="conducting-organization">Conducting Organization</label>
+              <input type="text" class="form-control" id="conducting-organization" name="conducting_organization" placeholder="Enter the conducting organization" required>
+            </div>
+            <div class="form-group">
+              <label for="inter-event-name">Event Name</label>
+              <input type="text" class="form-control" id="inter-event-name" name="inter_event_name" placeholder="Enter the event name" required>
+            </div>
+            <div class="form-group">
+              <label for="inter-achievements-desc">Achievements Description</label>
+              <textarea class="form-control" id="inter-achievements-desc" name="inter_achievements_desc" rows="3" placeholder="Describe your achievements" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="place-won">Place Won</label>
+              <input type="text" class="form-control" id="place-won" name="place_won" placeholder="Enter the place won" required>
+            </div>
+            <div class="form-group">
+              <label for="certificate-link">Certificate Link</label>
+              <input type="url" class="form-control" id="certificate-link" name="certificate_link" placeholder="Enter the certificate link" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Button to open modal for CEG Events Achievement -->
+  <div class="d-flex justify-content-center flex-row mb-4">
+    <button class="btn btn-dark mb-3 mx-2" data-toggle="modal" data-target="#intraEventModal" style="width: 250px;">Submit CEG Events Achievement</button>
+  </div>
+  <!-- CEG Events Achievement Modal -->
+  <div class="modal fade" id="intraEventModal" tabindex="-1" role="dialog" aria-labelledby="intraEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="intraEventModalLabel">Submit CEG Events Achievement</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="/submit-intra-achievement" method="POST">
+            <div class="form-group">
+              <label for="event-id">Event ID</label>
+              <input type="text" class="form-control" id="event-id" name="event_id" placeholder="Enter the event ID" required>
+            </div>
+            <div class="form-group">
+              <label for="achievements-desc">Achievements Description</label>
+              <textarea class="form-control" id="achievements-desc" name="achievements_desc" rows="3" placeholder="Describe your achievements" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="place-won">Place Won</label>
+              <input type="text" class="form-control" id="place-won" name="place_won" placeholder="Enter the place won" required>
+            </div>
+            <div class="form-group">
+              <label for="certificate-link">Certificate Link</label>
+              <input type="url" class="form-control" id="certificate-link" name="certificate_link" placeholder="Enter the certificate link" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+</div>
+<hr>
+  <h2 class="text-center mb-4">Generate Achievements Report</h2>
+  <div class="d-flex justify-content-center mb-4" style="flex-wrap: nowrap;">
+  <form action="/generate-report" method="POST">
+    <button type="submit" class="btn btn-warning">Generate Report as PDF</button>
+  </form>
   </div>
   
+  
+<hr>
+<h2 class="text-center mb-4">Our Clubs</h2>
+<div class="row">
+  <% clubs.forEach(club => { %>
+    <div class="col-md-4 mb-4">
+      <div class="card club-tile">
+        <div class="card-body text-center">
+         <a href="https://ibb.co/3B4SPrN"></a> <img src="<%= club.club_logo %>" alt="<%= club.club_name %> Logo" class="img-fluid mb-3"> </a>
+          <h5 class="card-title"><%= club.club_name %></h5>
+          <a href="/non-member?club_id=<%= club.club_id %>" class="btn btn-secondary mb-2">Non-Member Login</a>
+          
+          <!-- Member Login Form -->
+          <form action="/member" method="GET" class="mt-3">
+            <div class="form-group">
+              <label for="password-<%= club.club_id %>">Enter your password:</label>
+              <input type="password" id="password-<%= club.club_id %>" name="password" class="form-control" required>
+              <input type="hidden" name="club_id" value="<%= club.club_id %>">
+            </div>
+            <button type="submit" class="btn btn-primary mb-2">Member Login</button>
+          </form>
+
+          <!-- OB Login Form -->
+          <form action="/ob" method="GET" class="mt-3">
+            <div class="form-group">
+              <label for="password-<%= club.club_id %>">Enter your password:</label>
+              <input type="password" id="password-<%= club.club_id %>" name="password" class="form-control" required>
+              <input type="hidden" name="club_id" value="<%= club.club_id %>">
+            </div>
+            <button type="submit" class="btn btn-success mb-2">OB Login</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  <% }); %>
 </div>
 
 <%- include('partials/footer') %>

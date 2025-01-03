@@ -8,6 +8,7 @@ import pdf from "html-pdf";
    import multer from "multer";
    import path from 'path';
    import fs from 'fs';
+   import { fileURLToPath } from 'url';
  
 
 const router = express.Router();
@@ -35,9 +36,10 @@ router.get("/", async (req, res) => {
       WHERE 
         OfficeBearers.OB_POST = 'President'
     `);
+    const isLoggedIn = req.session && req.session.isLoggedIn;
     const clubs = result.rows;
     console.log(clubs);
-    res.render("home.ejs", { clubs });
+    res.render("home.ejs", { clubs, isLoggedIn  });
   } catch (err) {
     console.error("Error fetching clubs:", err);
     res.render("home.ejs", { clubs: [] });
@@ -54,26 +56,20 @@ router.get("/register", (req, res) => {
   res.render("register.ejs");
 });
 
-// Logout route
-router.get("/logout", (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
-    res.redirect("/");
-  });
-});
+
 
 // Student dashboard route
 router.get("/student", ensureAuthenticated, async (req, res) => {
   try {
+    const isLoggedIn = req.session && req.session.isLoggedIn;
     const result = await db.query("SELECT * FROM clubs");
     const clubs = result.rows;
     console.log(clubs); // Fetch clubs from the database
     res.render("student.ejs", {
       studentName: req.user.student_name,
       rollNumber: req.user.roll_no,
-      clubs: clubs // Pass clubs to the template
+      clubs: clubs, // Pass clubs to the template
+      isLoggedIn
     });
   } catch (err) {
     console.error("Error fetching clubs:", err);
@@ -86,46 +82,88 @@ router.get("/student", ensureAuthenticated, async (req, res) => {
 });
 
 
-// Login handling
+/// Login handling
 router.post("/login", async (req, res, next) => {
   const recaptchaResponse = req.body['g-recaptcha-response'];
   const secretKey = process.env.RECAPTCHA_SECRET_KEY;
 
   try {
-    const response = await axios.post(`https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`);
+    // Verify reCAPTCHA response
+    const response = await axios.post(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${recaptchaResponse}`
+    );
     const data = response.data;
 
-    if (data.success) {
-      passport.authenticate("local",async (err, user, info) => {
-        if (err) {
-          return next(err);
-        }
-        if (!user) {
-          req.flash('error', info.message);
-          return res.redirect("/login");
-        }
-        const rollNo=user.roll_no;
-        const memberDetails = await db.query("SELECT * FROM students join member on students.roll_no = member.student_roll_no WHERE ROLL_NO = $1", [rollNo]);
-       console.log(memberDetails.rows);
-       const obdetails = await db.query("SELECT * FROM students join officebearers on students.roll_no = officebearers.student_roll_no WHERE ROLL_NO = $1",[rollNo]);
-       console.log(obdetails.rows);
+    if (!data.success) {
+      req.flash('error', 'reCAPTCHA verification failed. Please try again.');
+      return res.redirect("/login");
+    }
+
+    // Authenticate user using Passport
+    passport.authenticate("local", async (err, user, info) => {
+      if (err) {
+        console.error("Error during authentication:", err);
+        return next(err);
+      }
+
+      if (!user) {
+        req.flash('error', info.message);
+        return res.redirect("/login");
+      }
+
+      try {
+        const rollNo = user.roll_no;
+
+        // Fetch member details
+        const memberDetails = await db.query(
+          "SELECT * FROM students JOIN member ON students.roll_no = member.student_roll_no WHERE roll_no = $1",
+          [rollNo]
+        );
+        console.log("Member Details:", memberDetails.rows);
+
+        // Fetch office bearer details
+        const obDetails = await db.query(
+          "SELECT * FROM students JOIN officebearers ON students.roll_no = officebearers.student_roll_no WHERE roll_no = $1",
+          [rollNo]
+        );
+        console.log("Office Bearer Details:", obDetails.rows);
+
+        // Log in the user
         req.logIn(user, (err) => {
           if (err) {
+            console.error("Error logging in user:", err);
             return next(err);
           }
+
+          // Set session variables
+          req.session.isLoggedIn = true;
+          req.session.userRole = obDetails.rows.length > 0 ? "officebearer" : "member";
+
           return res.redirect("/student");
         });
-      })(req, res, next);
-    } else {
-      req.flash('error', 'reCAPTCHA verification failed. Please try again.');
-      res.redirect("/login");
-    }
-  } catch (err) {
-    console.error("Error verifying reCAPTCHA:", err);
+      } catch (dbErr) {
+        console.error("Database error:", dbErr);
+        req.flash('error', 'An error occurred during login. Please try again.');
+        res.redirect("/login");
+      }
+    })(req, res, next);
+  } catch (recaptchaErr) {
+    console.error("Error verifying reCAPTCHA:", recaptchaErr);
     req.flash('error', 'An error occurred during reCAPTCHA verification. Please try again.');
     res.redirect("/login");
   }
 });
+router.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res.redirect('/student'); // Optionally redirect to a fallback
+    }
+    res.clearCookie('connect.sid'); // Clear session cookie
+    res.redirect('/login'); // Redirect to login page
+  });
+});
+
 
 
 // Registration handling
@@ -746,63 +784,30 @@ router.delete('/delete-announcement/:event_id', async (req, res) => {
 });
 
 
-
-
-// router.post('/edit-announcement', (req, res) => {
-//   const { event_id, announcement_description, announcement_type, club_id } = req.body;
-  
-//   // Update announcement in database
-//   const updateQuery = `
-//       UPDATE announcements 
-//       SET announcement_description = ?, 
-//           announcement_type = ? 
-//       WHERE event_id = ? AND club_id = ?
-//   `;
-  
-//   db.query(updateQuery, [
-//       announcement_description, 
-//       announcement_type, 
-//       event_id, 
-//       club_id
-//   ], (err, result) => {
-//       if (err) {
-//           return res.status(500).json({ success: false, message: err.message });
-//       }
-//       res.redirect('/your-page-route');
-//   });
-// });
-
-// router.post('/delete-announcement', (req, res) => {
-//   const { event_id } = req.body;
-  
-//   const deleteQuery = 'DELETE FROM announcements WHERE event_id = ?';
-  
-//   db.query(deleteQuery, [event_id], (err, result) => {
-//       if (err) {
-//           return res.status(500).json({ success: false, message: err.message });
-//       }
-//       res.json({ success: true });
-//   });
-// });
-
-
-
-// Route to handle adding an event
 router.post('/addEvent', upload.single('eventImage'), async (req, res) => {
   const { eventName, eventDate, eventVenue, eventTime, eventShortDescription, eventLink, extraCurricular, club_id, password } = req.body; // Ensure all fields are included
   const file = req.file;
 
   try {
-    // Save the image file locally
-    const targetPath = path.join('c:\\Users\\iitje\\webdev\\ceg\\public\\images\\uploads', file.originalname);
+    // Extract the file extension
+    const fileExtension = path.extname(file.originalname);
+    const targetDir = path.join('D:\\WebDev Projects\\CEG-Club-Connex\\public\\images\\uploads');
+    const targetPath = path.join(targetDir, `${file.filename}${fileExtension}`);
+
+    // Ensure the uploads directory exists
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    // Save the image file locally with the correct extension
     fs.renameSync(file.path, targetPath);
 
-    const publicUrl = `/uploads/${file.originalname}`; // URL to access the image locally
-
+    const publicUrl = `/images/uploads/${file.filename}${fileExtension}`; // URL to access the image locally
+    const eventTimer = `${eventDate} ${eventTime}:00`;
     // Save the event details to the database
     await db.query(
       "INSERT INTO Events (club_id, event_name, event_date, event_venue, event_time, event_poster_image, event_short_description, event_link, EXTRA_CURRICULAR_OR_NON_CURRICULAR) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
-      [club_id, eventName, eventDate, eventVenue, eventTime, publicUrl, eventShortDescription, eventLink, extraCurricular]
+      [club_id, eventName, eventDate, eventVenue, eventTimer, publicUrl, eventShortDescription, eventLink, extraCurricular]
     );
 
     req.flash('success', 'Event added successfully!');
@@ -818,6 +823,7 @@ router.post('/addEvent', upload.single('eventImage'), async (req, res) => {
 router.post('/editEvent', upload.single('eventImage'), async (req, res) => {
   const { event_id, eventName, eventDate, eventVenue, eventTime, eventShortDescription, eventLink, extraCurricular, club_id, password } = req.body;
   const file = req.file;
+  const eventTimer = `${eventDate} ${eventTime}:00`;
 
   // Validate event_id
   if (!event_id || isNaN(event_id)) {
@@ -839,15 +845,23 @@ router.post('/editEvent', upload.single('eventImage'), async (req, res) => {
         EXTRA_CURRICULAR_OR_NON_CURRICULAR = $7
     `;
 
-    const values = [eventName, eventDate, eventVenue, eventTime, eventShortDescription, eventLink, extraCurricular];
+    const values = [eventName, eventDate, eventVenue, eventTimer, eventShortDescription, eventLink, extraCurricular];
 
     // If a new image is uploaded, handle the file upload
     if (file) {
-      // Save the new image file locally
-      const targetPath = path.join(__dirname, 'public', 'images', 'uploads', file.originalname);
-      fs.renameSync(file.path, targetPath);
+      const fileExtension = path.extname(file.originalname);
+    const targetDir = path.join('D:\\WebDev Projects\\CEG-Club-Connex\\public\\images\\uploads');
+    const targetPath = path.join(targetDir, `${file.filename}${fileExtension}`);
 
-      const publicUrl = `/uploads/${file.originalname}`; // URL to access the image locally
+    // Ensure the uploads directory exists
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    // Save the image file locally with the correct extension
+    fs.renameSync(file.path, targetPath);
+
+    const publicUrl = `/images/uploads/${file.filename}${fileExtension}`; // URL to access the image locally
       // Add the image URL to the update query
       updateQuery += ", event_poster_image = $8 WHERE event_id = $9";
       values.push(publicUrl, event_id);
@@ -887,9 +901,6 @@ router.post('/deleteEvent', async (req, res) => {
 
 
 });
-
-
-
 
 export default router;
     

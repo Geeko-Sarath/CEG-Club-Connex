@@ -1,65 +1,154 @@
 body {
-  background-color: #f4f4f9;
+  background-color: #f9f9fc;
   color: #333;
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
 }
 
 .navbar {
-  background-color: #343a40;
+  background-color: #2c3e50;
+  padding: 0.5rem 1rem;
 }
 
 .navbar .navbar-brand, .navbar .nav-link {
-  color: #fff !important;
+  color: #ecf0f1 !important;
+  font-weight: bold;
 }
 
 .navbar .nav-link.btn {
-  color: #343a40 !important;
-  background-color: #ffc107;
-  border-color: #ffc107;
+  color: #2c3e50 !important;
+  background-color: #1abc9c;
+  border: none;
+  transition: background-color 0.3s ease;
 }
 
 .navbar .nav-link.btn:hover {
   color: #fff !important;
-  background-color: #e0a800;
-  border-color: #d39e00;
+  background-color: #16a085;
 }
 
 .jumbotron {
-  background-color: #007bff;
-  color: #fff;
-  padding: 2rem 1rem;
-  margin-bottom: 2rem;
-  border-radius: .3rem;
+  background-image: url("/images/ceg.jpg"); /* Path relative to the public folder */
+  background-size: cover;
+  background-position: center;
+  height: 50vh; /* Full-screen height */
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 
+.jumbotron .btn-warning {
+  background-color: #ffcc00;
+  border: none;
+  color: #000;
+  font-weight: bold;
+}
+
+.jumbotron .btn-warning:hover {
+  background-color: #e6b800;
+  color: #000;
+}
+
+.jumbotron .btn-outline-light {
+  background-color: #e8f2f1;
+  border: 2px solid #ffffff;
+  color: #0d0d0d;
+}
+
+.jumbotron .btn-outline-light:hover {
+  background-color: #7cded8;
+  color: #000;
+}
+
+.jumbotron h1, .jumbotron p {
+  max-width: 800px; /* Ensures text stays within a readable width */
+  margin: 0 auto;
+}
+
+
+
 .jumbotron .container {
-  max-width: 40rem;
+  max-width: 600px;
 }
 
 .jumbotron .display-3 {
-  font-size: 2.5rem;
+  font-size: 3rem;
+  font-weight: 700;
 }
 
 .jumbotron .lead {
-  font-size: 1.25rem;
-  font-weight: 300;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
+.jumbotron .btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 0.25rem;
+}
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+.text-container {
+  background:rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+  color: #fff; /* White text */
+  padding: 20px 40px; /* Add spacing around the text */
+  border-radius: 10px; /* Slightly round the edges */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Add a subtle shadow for depth */
+  max-width: 900px; /* Ensure the container doesn’t stretch too wide */
+  margin: 0 auto; /* Center it horizontally */
+  text-align: center; /* Center the text inside */
+}
+
+.text-container h1 {
+  
+  font-size: 3rem; /* Large, prominent title */
+  font-weight: bold;
+  line-height: 1.2; /* Adjust line height for readability */
+}
+
+.text-container p {
+  font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+  font-size: 1.5rem; /* Slightly smaller font for the subtitle */
+  margin-top: 10px; /* Add space between the title and subtitle */
+  color: #e0e0e0; /* Softer white for subtitle */
+}
+
+
 .card {
-  border: 1px solid #ddd;
-  border-radius: .25rem;
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .card-body {
-  padding: 1.25rem;
+  padding: 1.5rem;
 }
 
 .card-title {
-  margin-bottom: .75rem;
-  color: #007bff;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #3498db;
+  margin-bottom: 0.75rem;
 }
 
 .card-text {
   margin-bottom: 1rem;
+  font-size: 0.95rem;
+  color: #555;
 }
 
 .footer {
@@ -76,6 +165,29 @@ body {
   color: #6c757d !important;
 }
 
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: #34495e;
+}
+
+.btn-outline-warning {
+  background-color: #f39c12;
+  color: #fff !important;
+  border: none;
+}
+
+.btn-outline-warning:hover {
+  background-color: #e67e22;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -90,3 +202,38 @@ body {
 .footer {
   animation: fadeInUp 2s ease-in-out;
 }
+.modal-header {
+  background-color: #f8f9fa;
+}
+
+.modal-title {
+  color: #343a40;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-content {
+  border-radius: 8px;
+}
+.btn-success:hover {
+  background-color: #28a745;
+}
+.btn-info:hover {
+  background-color: #17a2b8;
+}
+.btn-dark:hover {
+  background-color: #343a40;
+}
+
+/* Optional: Transition effect for smooth hover change */
+.btn {
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Optional: Slight scale effect on hover */
+.btn:hover {
+  transform: scale(1.05);
+}
+
