@@ -38,7 +38,7 @@ router.get("/", async (req, res) => {
     `);
     const isLoggedIn = req.session && req.session.isLoggedIn;
     const clubs = result.rows;
-    console.log(clubs);
+  
     res.render("home.ejs", { clubs, isLoggedIn  });
   } catch (err) {
     console.error("Error fetching clubs:", err);
@@ -64,7 +64,7 @@ router.get("/student", ensureAuthenticated, async (req, res) => {
     const isLoggedIn = req.session && req.session.isLoggedIn;
     const result = await db.query("SELECT * FROM clubs");
     const clubs = result.rows;
-    console.log(clubs); // Fetch clubs from the database
+   
     res.render("student.ejs", {
       studentName: req.user.student_name,
       rollNumber: req.user.roll_no,
@@ -209,9 +209,9 @@ router.post("/register", async (req, res) => {
 router.post("/submit-academic-details", ensureAuthenticated, async (req, res) => {
   const { sem, gpa } = req.body;
   const rollNo = req.user.roll_no;
-console.log("hello");
+
   try {
-    // Check if the event exists
+   
         
 
     // Insert the achievement
@@ -471,33 +471,14 @@ router.get("/non-member", async (req, res) => {
       );
       const events = eventResult.rows;
 
-      const query = `
-      SELECT * FROM announcements 
+      const query = await db.query( `
+      SELECT * FROM announcements a join events e on a.club_id=e.club_id
       WHERE announcement_type = 'event_announcement'
-    `;
+    `);
     
     
+    
 
-      // First, let's log the table structure
-      console.log('Checking table structures...');
-      
-      // Debug query to check reply table
-      const checkReplyTable = await db.query(`
-          SELECT column_name, data_type 
-          FROM information_schema.columns 
-          WHERE table_name = 'reply'`);
-      console.log('Reply table structure:', checkReplyTable.rows);
-
-      // Debug query to check feedback table
-      const checkFeedbackTable = await db.query(`
-          SELECT column_name, data_type 
-          FROM information_schema.columns 
-          WHERE table_name = 'feedback'`);
-      console.log('Feedback table structure:', checkFeedbackTable.rows);
-
-      // Debug query to check if there's any data in reply table
-      const checkReplyData = await db.query('SELECT COUNT(*) FROM reply');
-      console.log('Number of replies:', checkReplyData.rows[0].count);
 
       // Modified reply query with correct table names and joins
       const replyResult = await db.query(`
@@ -510,19 +491,19 @@ router.get("/non-member", async (req, res) => {
       `, [rollNo, clubId]);
       const replies = replyResult.rows;
       
-      console.log('Reply Query Results:', replies);
-      
-      // If the above query doesn't work, try this simpler version to debug
-      const simpleReplyQuery = await db.query('SELECT * FROM reply');
-      console.log('All replies (simple query):', simpleReplyQuery.rows);
-      const rows = await db.query(query);
-      console.log('Announcements ', rows.rows);
+  
+     
+      const rows = query.rows;
+
+      console.log(rows);
+     
       // Render with all data
       return res.render("non-member.ejs", {
+        rollNo: rollNo,
           club: club,
           events: events,
           replies: replies,
-          announcements: rows.rows, // Ensure replies is always at least an empty array
+          announcements: rows, // Ensure replies is always at least an empty array
           message: replyResult.rows.length === 0 ? "No replies found." : null
       });
       
@@ -561,8 +542,8 @@ router.get("/member", ensureAuthenticated, async (req, res) => {
     );
     //Fetch announcements of the club
     const query = await db.query(`
-      SELECT * FROM announcements where club_id = $1
-    `, [club_id]);
+      SELECT * FROM announcements a join events e on a.club_id=e.club_id  
+    `);
 
     // Fetch events for the club
     const eventResult = await db.query(
@@ -570,20 +551,28 @@ router.get("/member", ensureAuthenticated, async (req, res) => {
       [club_id]
     );
 
+    const eventNames = await db.query(`
+      SELECT announcements.event_id, announcements.announcement_description, events.event_name 
+      FROM announcements 
+      JOIN events ON announcements.event_id = events.event_id 
+      WHERE announcements.club_id = $1
+    `, [club_id]);
+     
+
     const clubResult = await db.query("SELECT * FROM Clubs WHERE CLUB_ID = $1", [club_id]);
     const club = clubResult.rows[0];
     const members = memResult.rows;
     const events = eventResult.rows;
-    console.log("hello");
-    console.log(memResult);
+    const eventInfo = eventNames.rows;
     const rows = query.rows;
-
+    console.log(rows);
+   
     if (result.rows.length > 0) {
       const memberPassword = result.rows[0].mem_password;
 
       if (password === memberPassword) {
         // Password is correct, render the member dashboard or relevant page
-        res.render("member.ejs", { club: club, members: members, events: events,announcements: rows });
+        res.render("member.ejs", {rollNo:rollNo, club: club, members: members, events: events,announcements: rows,eventInfo: eventInfo,password: memberPassword });
       } else {
         // Password is incorrect
         req.flash('error', 'Incorrect password. Please try again.');
@@ -616,7 +605,7 @@ router.get("/ob", ensureAuthenticated, async (req, res) => {
     // Ensure club_id is defined
     if (!club_id) {
       req.flash('error', 'Club ID is required.');
-      console.log("inside ob and ");
+    
       return res.redirect("/"); // Redirect to home or login page
     }
 
@@ -632,17 +621,19 @@ router.get("/ob", ensureAuthenticated, async (req, res) => {
     );
     
 
-    const feedbackResult = await db.query("SELECT f.* FROM feedback f,students s,events e,clubs c  WHERE f.roll_no = s.roll_no and e.club_id = c.club_id and f.event_id = e.event_id");
+    const feedbackResult = await db.query("SELECT f.feedback_id,f.roll_no,f.event_id,f.club_id,f.grievance,e.event_name FROM feedback f,students s,events e,clubs c  WHERE f.roll_no = s.roll_no and e.club_id = c.club_id and f.event_id = e.event_id");
     const clubResult = await db.query("SELECT * FROM Clubs WHERE CLUB_ID = $1", [club_id]);
     const eventResult = await db.query("SELECT * FROM Events e JOIN Clubs c ON c.club_id = e.club_id WHERE e.club_id = $1 order by event_id asc", [club_id]);
-    const announcement_result = await db.query('SELECT * FROM announcements');
+    const announcement_result = await db.query('SELECT * FROM announcements  natural join events   where club_id=$1',[club_id]);
     const announcements = announcement_result.rows;
+   
+    console.log(announcements);
     const club = clubResult.rows[0];
     const obs = obResult.rows;
     const events = eventResult.rows;
-    console.log(password);
+    
     const feedback = feedbackResult.rows;
-
+ console.log(feedback);
     if (result.rows.length > 0) {
       const obPassword = result.rows[0].ob_password;
 
@@ -652,7 +643,7 @@ router.get("/ob", ensureAuthenticated, async (req, res) => {
       } else {
         // Password is incorrect
         req.flash('error', 'Incorrect password. Please try again.');
-        console.log("Password mismatch:", password," hello" , obPassword);
+        console.log("Password mismatch:", password , obPassword);
         res.redirect("/"); // Redirect to home or login page
       }
     } else {
@@ -671,7 +662,7 @@ router.get("/ob", ensureAuthenticated, async (req, res) => {
 
 // Route for submitting feedback
 router.post('/submitFeedback', async (req, res) => {
-  console.log("Request body:", req.body);
+  
   const { roll_no, event_id, grievance, userType, club_id } = req.body; // Include club_id in the request body
 
   try {
@@ -690,7 +681,7 @@ router.post('/submitFeedback', async (req, res) => {
     // Insert feedback into the database (with or without roll_no)
     const result = await db.query(query, feedbackInsertData);
 
-    console.log("Feedback submitted:", result.rows[0]);
+    
     res.redirect(userType === 'member' ? '/member' : '/non-member'); // Redirect based on user type
   } catch (err) {
     console.error("Error submitting feedback:", err);

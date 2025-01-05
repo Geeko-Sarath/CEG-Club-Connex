@@ -7,112 +7,311 @@
   <title>CEG Club Connex - Event Management</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    .announcement-form {
-      max-width: 500px;
-      margin: 0 auto;
-      background-color: #f9f9f9;
-      padding: 25px;
+    html, body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .container-fluid {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+    }
+    .main-container {
+      display: flex;
+      flex: 7;
+      overflow: hidden;
+    }
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .events-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #de8714;
+      padding: 20px;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-
-    .form-group {
-      margin-bottom: 15px;
+    .events-container {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      overflow-x: auto;
     }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      color: #2c3e50;
-      font-weight: bold;
+    .event-card {
+      flex: 0 0 auto;
+      width: 300px;
+      margin-right: 20px;
     }
-
-    .form-group input, 
-    .form-group select, 
-    .form-group textarea {
+    .sidebar {
+      flex: 3;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+    .scrollable {
+      max-height: 300px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      direction: rtl; /* This will move the scrollbar to the left */
+    }
+    .scrollable > * {
+      direction: ltr; /* This will keep the content direction normal */
+    }
+    .announcements {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .announcement-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 15px;
       width: 100%;
+      transition: transform 0.3s ease;
+    }
+    .card {
+      margin-bottom: 20px;
+    }
+    .card-body {
       padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      transition: border-color 0.3s ease;
     }
-
-    .form-group input:focus, 
-    .form-group select:focus, 
-    .form-group textarea:focus {
-      outline: none;
-      border-color: #3498db;
+    .card-title {
+      font-size: 1.25rem;
     }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #2980b9;
+    .card-text {
+      font-size: 0.875rem;
+      f
     }
   </style>
 </head>
 <body>
-<div class="container my-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Manage Events</h2>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal" onclick="openAddEventModal()">Add New Event</button>
+<div class="container-fluid py-4">
+  <div class="sidebar">
+    <!-- Replied Feedback Section -->
+    <section class="mb-5">
+      <h2 class="h4 mb-4" style="color: #800000">Replied Feedback</h2>
+      <div class="scrollable">
+        <% if (feedback && feedback.length > 0) { %>
+          <div class="row">
+            <% feedback.forEach(item => { %>
+              <div class="col-12 mb-3">
+                <div class="card h-100 shadow-sm">
+                  <div class="card-body">
+                    <h5 class="card-title">Event: <%= item.event_name %></h5>
+                    <p><strong>Roll Number:</strong> <%= item.roll_no %></p>
+                    <p><strong>Grievance:</strong> <%= item.grievance %></p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#replyFeedbackModal-<%= item.feedback_id %>">Reply</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Reply Feedback Modal -->
+              <div class="modal fade" id="replyFeedbackModal-<%= item.feedback_id %>" tabindex="-1" role="dialog" aria-labelledby="replyFeedbackModalLabel-<%= item.feedback_id %>" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="replyFeedbackModalLabel-<%= item.feedback_id %>">Reply to Feedback</h5>
+                      <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <form action="/replyFeedback" method="POST" class="needs-validation" novalidate>
+                        <input type="hidden" name="club_id" value="<%= club.club_id %>"> <!-- Hidden input for club_id -->
+                        <input type="hidden" name="feedback_id" value="<%= item.feedback_id %>">
+                        <div class="mb-3">
+                          <label for="reply-text-<%= item.feedback_id %>" class="form-label">Reply</label>
+                          <textarea class="form-control" id="reply-text-<%= item.feedback_id %>" name="reply_text" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send Reply</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div class="alert alert-info" role="alert">
+            No feedback submitted yet.
+          </div>
+        <% } %>
+      </div>
+    </section>
+
+    <!-- Announcements Section -->
+    <section class="mb-5">
+      <h2 class="h4 mb-4" style="color: #800000">Announcements</h2>
+      <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addAnnouncementModal">Add Announcement</button>
+      <div class="scrollable">
+        <% if (announcements && announcements.length > 0) { %>
+          <div class="row">
+            <% announcements.forEach(announcement => { %>
+              <div class="col-12 mb-3">
+                <div class="card h-100 shadow-sm">
+                  <div class="card-body">
+                    <h4 class="card-title">Event : <%= announcement.event_name %></h4>
+                    <h5 class="card-title">ID : <%= announcement.event_id %></h5>
+                    <h6 class="card-title">Type : <%= announcement.announcement_type %></h6>
+
+                    <strong><p class="card-text">Description: <%= announcement.announcement_description %></p></strong>
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editAnnouncementModal-<%= announcement.id %>">Edit</button>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAnnouncementModal-<%= announcement.id %>">Delete</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Edit Announcement Modal -->
+              <div class="modal fade" id="editAnnouncementModal-<%= announcement.id %>" tabindex="-1" role="dialog" aria-labelledby="editAnnouncementModalLabel-<%= announcement.id %>" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="editAnnouncementModalLabel-<%= announcement.id %>">Edit Announcement</h5>
+                      <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <form action="/editAnnouncement/<%= announcement.id %>" method="POST" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                          <label for="edit-announcement-<%= announcement.id %>" class="form-label">Description</label>
+                          <textarea class="form-control" id="edit-announcement-<%= announcement.id %>" name="announcement_description" rows="3" required><%= announcement.announcement_description %></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Delete Announcement Modal -->
+              <div class="modal fade" id="deleteAnnouncementModal-<%= announcement.id %>" tabindex="-1" role="dialog" aria-labelledby="deleteAnnouncementModalLabel-<%= announcement.id %>" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="deleteAnnouncementModalLabel-<%= announcement.id %>">Delete Announcement</h5>
+                      <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <p>Are you sure you want to delete this announcement?</p>
+                      <form action="/deleteAnnouncement/<%= announcement.id %>" method="POST">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div class="alert alert-info" role="alert">
+            No announcements available at this time.
+          </div>
+        <% } %>
+      </div>
+    </section>
   </div>
 
-  <div class="row" id="eventContainer">
-    <% events.forEach(event => { %>
-      <div class="col-md-4 mb-4" id="<%= event.event_id %>">
+  <div class="main-container">
+    <!-- Main content for events -->
+    <div class="content">
+      <!-- Club Details Section -->
+      <section class="mb-5">
+        <h1 class="display-4 mb-4" style="color: #543A14;font-weight: 600;">Welcome to <%= club.club_name %></h1>
         <div class="card">
-          <img src="<%= event.event_poster_image %>" class="card-img-top" alt="Event Poster">
-          
-          <div class="card-body">
-            <h5 class="card-title"><%= event.event_name %></h5>
-            <p class="card-text"><strong>Event Id : </strong> <%= event.event_id %></p>
-            <p class="card-text"><strong>Date:</strong> 
-              <span class="event-date">
-                  <%= new Date(event.event_date).toLocaleDateString() %>
-              </span>
-          </p>
-            <p class="card-text"><strong>Venue:</strong> <%= event.event_venue %></p>
-            <p class="card-text"><strong>Time:</strong> <%= event.event_time %></p>
-            <p class="card-text"><strong>Description :</strong> <%= event.event_short_description %></p>
-            <p class="card-text"><strong>Link:</strong> <a href="<%= event.event_link %>" target="_blank">Click Here</a></p>
-            <button class="btn btn-secondary me-2" onclick="openEditEventModal('<%= event.event_id %>', '<%= event.event_name %>', '<%= event.event_date %>', '<%= event.event_venue %>', '<%= event.event_time %>', '<%= event.event_short_description %>', '<%= event.event_link %>', '<%= event.event_poster_image %>')">Edit</button>
-            <form action="/deleteEvent" method="POST" style="display:inline;">
-              <input type="hidden" name="event_id" value="<%= event.event_id %>">
-              <input type="hidden" name="club_id" value="<%= club.club_id %>"> <!-- Hidden input for club_id -->
-              <input type="hidden" name="password" value="<%= password %>"> <!-- Hidden input for password -->
-              <button type="submit" class="btn btn-danger">Delete</button>
-            </form>
+          <div class="card-body" style="background-color: #AAB396; font-size: large;">
+            <p><%= club.club_description %></p>
           </div>
         </div>
-      </div>
-    <% }); %>
-  </div>
+      </section>
 
-  <h3 class="mt-5">Office Bearers</h3>
-  <div class="row" id="obContainer">
-    <% ob.forEach(officeBearer => { %>
-      <div class="col-md-4 mb-4">
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title"><%= officeBearer.student_name %></h5>
-            <p class="card-text"><strong>Post:</strong> <%= officeBearer.ob_post %></p>
-          </div>
+      <!-- Office Bearers Section -->
+      <section class="mb-5">
+        <h2 class="h2 mb-4" style="color: #800000">Office Bearers</h2>
+        <div class="row" id="obContainer">
+          <% ob.forEach(officeBearer => { %>
+            <div class="col-md-4 mb-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title"><%= officeBearer.student_name %></h5>
+                  <p class="card-text"><strong>Post:</strong> <%= officeBearer.ob_post %></p>
+                </div>
+              </div>
+            </div>
+          <% }); %>
         </div>
-      </div>
-    <% }); %>
+      </section>
+
+      <!-- Events Section -->
+      <section class="events-box mb-5">
+        <h2 class="h2 mb-4" style="color: #800000">Manage Events</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal" onclick="openAddEventModal()">Add New Event</button>
+        </div>
+        <div class="events-container" id="eventContainer">
+          <% if (events && events.length > 0) { %>
+            <% events.forEach(event => { %>
+              <div class="event-card" id="<%= event.event_id %>">
+                <div class="card h-100 shadow-sm" style="background-color: #FFF0DC; color: black;">
+                  <% if (event.event_poster_image) { %>
+                    <img src="<%= event.event_poster_image %>" 
+                         class="card-img-top" 
+                         alt="<%= event.event_name %>"
+                         onerror="this.src='/images/default-event.jpg'">
+                  <% } %>
+                  <div class="card-body">
+                    <h5 class="card-title" style="color: #441752"><%= event.event_name %></h5>
+                    <div style="display: flex;">
+                      <p class="card-text"><strong>Event Id:</strong></p>
+                      <span style="font-weight: 200; font-size: medium;"> <%= event.event_id %></span>
+                    </div>
+                    <div style="display: flex;">
+                      <p class="card-text"><strong>Date:</strong></p>
+                      <span class="event-date" style="font-weight: 200;">
+                        <%= new Date(event.event_date).toLocaleDateString() %>
+                      </span>
+                    </div>
+                    <div style="display: flex;"><p class="card-text"><strong>Venue:</strong> </p><span  style="font-weight: 200;" ><%= event.event_venue %></span></div>
+                    <div style="display: flex;"><p class="card-text"><strong>Time:</strong> </p> <span  style="font-weight: 200;"><%= event.event_time %></div>
+                    <div style="display: flex;"><p class="card-text"><strong>Description:</strong> </p> <span  style="font-weight: 200;"><%= event.event_short_description %></div>
+                    <div style="display: flex;"><p class="card-text"><strong>Link:</strong> </p><a href="<%= event.event_link %>" target="_blank">Click Here</a></div>
+                    <button class="btn btn-secondary me-2" onclick="openEditEventModal('<%= event.event_id %>', '<%= event.event_name %>', '<%= event.event_date %>', '<%= event.event_venue %>', '<%= event.event_time %>', '<%= event.event_short_description %>', '<%= event.event_link %>', '<%= event.event_poster_image %>')">Edit</button>
+                    <form action="/deleteEvent" method="POST" style="display:inline;">
+                      <input type="hidden" name="event_id" value="<%= event.event_id %>">
+                      <input type="hidden" name="club_id" value="<%= club.club_id %>"> <!-- Hidden input for club_id -->
+                      <input type="hidden" name="password" value="<%= password %>"> <!-- Hidden input for password -->
+                      <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <div class="col-12">
+              <div class="alert alert-info">No events available at this time.</div>
+            </div>
+          <% } %>
+        </div>
+      </section>
+    </div>
   </div>
 </div>
 
+<!-- Add Event Modal -->
 <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -171,86 +370,46 @@
     </div>
   </div>
 </div>
-<!--feedback-->
-<div class="container my-5">
-  <h2>Submitted Feedback</h2>
-  <div class="row" id="feedbackContainer">
-    <% if (feedback && feedback.length > 0) { %>
-      <% feedback.forEach(item => { %>
-        <div class="col-md-4 mb-4">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Event: <%= item.event_name %></h5>
-              <p><strong>Roll Number:</strong> <%= item.roll_no %></p>
-              <p><strong>Grievance:</strong> <%= item.grievance %></p>
-
-              <form action="/replyFeedback" method="POST">
-                <input type="hidden" name="club_id" value="<%= club.club_id %>"> <!-- Hidden input for club_id -->
-                <input type="hidden" name="feedback_id" value="<%= item.feedback_id %>">
-                <textarea name="reply_text" required></textarea>
-                <button type="submit">Reply</button>
-              </form> 
-            </div>
-          </div>
-        </div>
-      <% }); %>
-    <% } else { %>
-      <p>No feedback submitted yet.</p>
-    <% } %>
-  </div>
-</div>
-<form action="/add-announcement" method="POST" class="announcement-form">
-  <div class="form-group">
-    <label for="event_id">Event ID:</label>
-    <input type="text" id="event_id" name="event_id" required>
-  </div>
-
-  <div class="form-group">
-    <label for="announcement_type">Announcement Type:</label>
-    <select id="announcement_type" name="announcement_type" required>
-      <option value="">Select Type</option>
-      <option value="meet">Meet</option>
-      <option value="event_announcement">Event Announcement</option>
-    </select>
-  </div>
-
-  <div class="form-group">
-    <label for="announcement_description">Announcement Description:</label>
-    <textarea id="announcement_description" name="announcement_description" rows="4" required></textarea>
-  </div>
-
-  <div class="form-group">
-    <label for="club_id">Club ID:</label>
-    <input type="text" id="club_id" name="club_id" required>
-  </div>
-
-  <button type="submit">Add Announcement</button>
-</form>
-
-<!-- Announcements Section with Edit Capabilities -->
-<div class="announcements">
-  <% announcements.forEach(announcement => { %>
-  <div class="announcement-card" data-event-id="<%= announcement.event_id %>">
-      <h3>Event ID: <%= announcement.event_id %></h3>
-      <p>Description: <%= announcement.announcement_description %></p>
-      <p>Club ID: <%= announcement.club_id %></p>
-      <p>Type: <%= announcement.announcement_type %></p>
-      <div class="announcement-actions">
-          <button class="btn btn-secondary edit-announcement" 
-                  data-event-id="<%= announcement.event_id %>"
-                  data-description="<%= announcement.announcement_description %>"
-                  data-type="<%= announcement.announcement_type %>"
-                  data-club-id="<%= announcement.club_id %>">
-              Edit
-          </button>
-          <button class="btn btn-danger delete-announcement" 
-                  data-event-id="<%= announcement.event_id %>">
-              Delete
-          </button>
+<!-- Add Announcement Modal -->
+<div class="modal fade" id="addAnnouncementModal" tabindex="-1" aria-labelledby="addAnnouncementModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addAnnouncementModalLabel">Add New Announcement</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
+      <div class="modal-body">
+        <form action="/add-announcement" method="POST" class="announcement-form">
+          <div class="form-group">
+            <label for="event_id">Event ID:</label>
+            <input type="text" id="event_id" name="event_id" required>
+          </div>
+
+          <div class="form-group">
+            <label for="announcement_type">Announcement Type:</label>
+            <select id="announcement_type" name="announcement_type" required>
+              <option value="">Select Type</option>
+              <option value="meet">Meet</option>
+              <option value="event_announcement">Event Announcement</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="announcement_description">Announcement Description:</label>
+            <textarea id="announcement_description" name="announcement_description" rows="4" required></textarea>
+          </div>
+
+          <div class="form-group">
+            <input type="hidden" name="club_id" value="<%= club.club_id %>">
+          </div>
+
+          <button type="submit" class="btn btn-primary">Add Announcement</button>
+        </form>
+      </div>
+    </div>
   </div>
-  <% }); %>
 </div>
+
 <!-- Hidden form for editing announcements -->
 <form id="edit-announcement-form" action="/edit-announcement" method="POST" style="display: none;">
   <input type="hidden" id="edit-event-id" name="event_id">
@@ -266,12 +425,11 @@
     <label for="edit-announcement-type">Announcement Type:</label>
     <input type="text" id="edit-announcement-type" name="announcement_type" required>
   </div>
-  <button type="submit">Update Announcement</button>
+  <button type="submit" class="btn btn-primary">Update Announcement</button>
 </form>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-
   let currentEditEventId = null;
 
   document.getElementById("eventImageFile").addEventListener("change", function() {
@@ -316,10 +474,6 @@
     new bootstrap.Modal(document.getElementById("addEventModal")).show();
   }
 
-  function deleteEvent(eventId) {
-    document.getElementById(eventId).remove();
-  }
-
   document.addEventListener('DOMContentLoaded', function() {
     // Handle edit button click
     document.querySelectorAll('.edit-announcement').forEach(button => {
@@ -339,6 +493,9 @@
       });
     });
 
+   
+  });
+
     // Handle delete button click
     document.querySelectorAll('.delete-announcement').forEach(button => {
       button.addEventListener('click', async function() {
@@ -357,5 +514,6 @@
         }
       });
     });
-  });
+  
 </script>
+<%- include('partials/footer') %>

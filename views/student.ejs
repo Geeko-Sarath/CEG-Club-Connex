@@ -1,11 +1,113 @@
 <%- include('partials/header') %>
-
-<div class="jumbotron text-center">
-  <div class="text-container">
-    <h1 class="display-3 font-weight-bold">Welcome, <%= studentName %>!</h1>
-    <p class="lead font-italic">Roll Number: <%= rollNumber %></p>
+<style>
+  .welcome-card {
+    background-color: #543A14; /* Light background color */
+    border: 2px solid #000101; /* Blue border */
+    color: #FFF0DC; /* Blue text color */
+  }
+  .welcome-card .card-title {
+    color: #FFF0DC; /* Dark text color for the title */
+  }
+  .club-tile {
+    transition: none; /* Remove hover effect */
+  }
+</style>
+<div class=" text-center my-4 welcome-card">
+  <div class="card-body">
+    <h2 class="card-title font-weight-bold">Welcome, <%= studentName %>!</h2>
+    <p class="card-text lead font-italic" style="color: #FFF0DC;">Roll Number: <%= rollNumber %></p>
   </div>
 </div>
+
+
+
+<h2 class="text-center mb-4">Our Clubs</h2>
+<div class="row">
+  <% clubs.forEach(club => { %>
+    <div class="col-md-4 mb-4">
+      <div class="card club-tile" style="background-color:#FFF0DC;">
+        <div class="card-body text-center">
+           <img src="<%= club.club_logo %>" alt="<%= club.club_name %> Logo" class="img-fluid mb-3"> </a>
+          <h5 class="card-title" style="color: #543A14;"><%= club.club_name %></h5>
+          
+          <!-- Non-Member Login Button -->
+          <div class="row">
+            <div class="col-12">
+              <a href="/non-member?club_id=<%= club.club_id %>" class="btn btn-secondary mb-2">Non-Member Login</a>
+            </div>
+          </div>
+          
+          <!-- Member Login Button -->
+          <div class="row">
+            <div class="col-12">
+              <button type="button" class="btn btn-primary mb-2" data-toggle="modal" data-target="#memberLoginModal-<%= club.club_id %>">
+                Member Login
+              </button>
+            </div>
+          </div>
+
+          <!-- OB Login Button -->
+          <div class="row">
+            <div class="col-12">
+              <button type="button" class="btn btn-success mb-2" data-toggle="modal" data-target="#obLoginModal-<%= club.club_id %>">
+                OB Login
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Member Login Modal -->
+    <div class="modal fade" id="memberLoginModal-<%= club.club_id %>" tabindex="-1" role="dialog" aria-labelledby="memberLoginModalLabel-<%= club.club_id %>" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="memberLoginModalLabel-<%= club.club_id %>">Member Login - <%= club.club_name %></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form action="/member" method="GET">
+              <div class="form-group">
+                <label for="password-<%= club.club_id %>">Enter your password:</label>
+                <input type="password" id="password-<%= club.club_id %>" name="password" class="form-control" required>
+                <input type="hidden" name="club_id" value="<%= club.club_id %>">
+              </div>
+              <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OB Login Modal -->
+    <div class="modal fade" id="obLoginModal-<%= club.club_id %>" tabindex="-1" role="dialog" aria-labelledby="obLoginModalLabel-<%= club.club_id %>" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="obLoginModalLabel-<%= club.club_id %>">OB Login - <%= club.club_name %></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form action="/ob" method="GET">
+              <div class="form-group">
+                <label for="password-<%= club.club_id %>">Enter your password:</label>
+                <input type="password" id="password-<%= club.club_id %>" name="password" class="form-control" required>
+                <input type="hidden" name="club_id" value="<%= club.club_id %>">
+              </div>
+              <button type="submit" class="btn btn-success">Login</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% }); %>
+</div>
+<hr>
 
 <div class="container mt-5">
   <h2 class="text-center mb-4">Submit Your Details</h2>
@@ -135,40 +237,7 @@
   </div>
   
   
-<hr>
-<h2 class="text-center mb-4">Our Clubs</h2>
-<div class="row">
-  <% clubs.forEach(club => { %>
-    <div class="col-md-4 mb-4">
-      <div class="card club-tile">
-        <div class="card-body text-center">
-         <a href="https://ibb.co/3B4SPrN"></a> <img src="<%= club.club_logo %>" alt="<%= club.club_name %> Logo" class="img-fluid mb-3"> </a>
-          <h5 class="card-title"><%= club.club_name %></h5>
-          <a href="/non-member?club_id=<%= club.club_id %>" class="btn btn-secondary mb-2">Non-Member Login</a>
-          
-          <!-- Member Login Form -->
-          <form action="/member" method="GET" class="mt-3">
-            <div class="form-group">
-              <label for="password-<%= club.club_id %>">Enter your password:</label>
-              <input type="password" id="password-<%= club.club_id %>" name="password" class="form-control" required>
-              <input type="hidden" name="club_id" value="<%= club.club_id %>">
-            </div>
-            <button type="submit" class="btn btn-primary mb-2">Member Login</button>
-          </form>
 
-          <!-- OB Login Form -->
-          <form action="/ob" method="GET" class="mt-3">
-            <div class="form-group">
-              <label for="password-<%= club.club_id %>">Enter your password:</label>
-              <input type="password" id="password-<%= club.club_id %>" name="password" class="form-control" required>
-              <input type="hidden" name="club_id" value="<%= club.club_id %>">
-            </div>
-            <button type="submit" class="btn btn-success mb-2">OB Login</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  <% }); %>
-</div>
+
 
 <%- include('partials/footer') %>
