@@ -7,9 +7,12 @@
   }
   .welcome-card .card-title {
     color: #FFF0DC; /* Dark text color for the title */
+    
   }
   .club-tile {
-    transition: none; /* Remove hover effect */
+    transition: none;
+     /* Remove hover effect */
+    
   }
 </style>
 <div class=" text-center my-4 welcome-card">
@@ -22,12 +25,13 @@
 
 
 <h2 class="text-center mb-4">Our Clubs</h2>
-<div class="row">
+
+<div class="row" style = "height: 40%;">
   <% clubs.forEach(club => { %>
     <div class="col-md-4 mb-4">
-      <div class="card club-tile" style="background-color:#FFF0DC;">
+      <div class="card club-tile" style="display: flex; justify-content: center;  background-color:#FFF0DC;">
         <div class="card-body text-center">
-           <img src="<%= club.club_logo %>" alt="<%= club.club_name %> Logo" class="img-fluid mb-3"> </a>
+           <img src="<%= club.club_logo %>" alt="<%= club.club_name %> Logo" class="img-fluid mb-3" style = "height: 40%;"> </a>
           <h5 class="card-title" style="color: #543A14;"><%= club.club_name %></h5>
           
           <!-- Non-Member Login Button -->
@@ -107,8 +111,6 @@
     </div>
   <% }); %>
 </div>
-<hr>
-
 <div class="container mt-5">
   <h2 class="text-center mb-4">Submit Your Details</h2>
   <div class="d-flex justify-content-center mb-4" style="flex-wrap: nowrap;">
@@ -228,7 +230,6 @@
   </div>
 </div>
 </div>
-<hr>
   <h2 class="text-center mb-4">Generate Achievements Report</h2>
   <div class="d-flex justify-content-center mb-4" style="flex-wrap: nowrap;">
   <form action="/generate-report" method="POST">
